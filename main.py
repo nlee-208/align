@@ -10,6 +10,7 @@ import numpy as np
 import transformers
 from transformers import (
     AutoModelForSequenceClassification,
+AutoModelForCausalLM,
     AutoTokenizer, 
     set_seed,
     Trainer
@@ -26,7 +27,7 @@ from trl import (
     DPOTrainer,
     DPOConfig
 )
-from liger_kernel.transformers import AutoLigerKernelForCausalLM
+# from liger_kernel.transformers import AutoLigerKernelForCausalLM
 from src.config import (
     DataArguments,
     H4ArgumentParser,
@@ -83,7 +84,7 @@ def main(model_args, data_args, training_args, training_type: str, base_trainer:
         model_args.torch_dtype if model_args.torch_dtype in ["auto", None] else getattr(torch, model_args.torch_dtype)
     )
     if training_type.lower() != 'rm':
-        model = AutoLigerKernelForCausalLM.from_pretrained(
+        model = AutoModelForCausalLM.from_pretrained(
             model_args.model_name_or_path,
             cache_dir=model_args.cache_dir,
             attn_implementation=model_args.attn_implementation,
@@ -91,7 +92,7 @@ def main(model_args, data_args, training_args, training_type: str, base_trainer:
             use_cache=False if training_args.gradient_checkpointing else True
         )
         if training_type.lower() == 'dpo':
-            ref_model = AutoLigerKernelForCausalLM.from_pretrained(
+            ref_model = AutoModelForCausalLM.from_pretrained(
                 model_args.model_name_or_path,
                 cache_dir=model_args.cache_dir,
                 attn_implementation=model_args.attn_implementation,
@@ -196,7 +197,7 @@ def main(model_args, data_args, training_args, training_type: str, base_trainer:
     ########################
     print(list(preprocessed_dataset.features))
 
-    if training_type.lower() in ['orpo', 'rm']:
+    if training_type.lower() in ['orpo', 'rm', 'sft']:
         trainer = base_trainer(
             model,
             args=training_args,

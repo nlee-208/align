@@ -15,4 +15,4 @@ tqdm
 transformers
 trl
 wandb
-liger-kernel
+tensorboardx

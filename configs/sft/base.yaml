@@ -11,12 +11,11 @@ auto_insert_empty_system_msg: false
 
 # SFT trainer config
 bf16: true
-beta: 0.1
 do_eval: false
 tf32: true
 torch_compile: true
 optim: paged_adamw_8bit
-gradient_accumulation_steps: 8
+gradient_accumulation_steps: 4
 gradient_checkpointing: true
 gradient_checkpointing_kwargs:
   use_reentrant: False
@@ -26,19 +25,18 @@ log_level: info
 logging_steps: 5  
 logging_strategy: steps
 lr_scheduler_type: cosine
-max_length: 1024
-max_prompt_length: 512
+max_seq_length: 1024
 max_steps: -1
 num_train_epochs: 1
 output_dir: /workspace/hf_cache/iqwiki-kor/Q3B-Q72B_Dist-KoSingle-20K
 overwrite_output_dir: true
-per_device_train_batch_size: 8
+per_device_train_batch_size: 32
 remove_unused_columns: true
 report_to:
 - tensorboard
 - wandb
 save_strategy: "epoch"
-seed: 42
+seed: 4
 warmup_ratio: 0.05
 
 # Hub
