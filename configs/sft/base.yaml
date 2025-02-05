@@ -1,0 +1,46 @@
+# Model arguments
+model_name_or_path: Qwen/Qwen2.5-3B
+model_revision: main
+torch_dtype: bfloat16
+
+# Data training arguments
+dataset_name: iqwiki-kor/Q72B-Dist-KoSingle-20K
+dataset_split: train
+preprocessing_num_workers: 48
+auto_insert_empty_system_msg: false
+
+# SFT trainer config
+bf16: true
+beta: 0.1
+do_eval: false
+tf32: true
+torch_compile: true
+optim: paged_adamw_8bit
+gradient_accumulation_steps: 8
+gradient_checkpointing: true
+gradient_checkpointing_kwargs:
+  use_reentrant: False
+hub_model_id: iqwiki-kor/Q3B-Q72B_Dist-KoSingle-20K
+learning_rate: 5.0e-07
+log_level: info
+logging_steps: 5  
+logging_strategy: steps
+lr_scheduler_type: cosine
+max_length: 1024
+max_prompt_length: 512
+max_steps: -1
+num_train_epochs: 1
+output_dir: /workspace/hf_cache/iqwiki-kor/Q3B-Q72B_Dist-KoSingle-20K
+overwrite_output_dir: true
+per_device_train_batch_size: 8
+remove_unused_columns: true
+report_to:
+- tensorboard
+- wandb
+save_strategy: "epoch"
+seed: 42
+warmup_ratio: 0.05
+
+# Hub
+push_to_hub: true
+hub_private_repo: true

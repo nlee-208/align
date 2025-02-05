@@ -8,4 +8,4 @@ export HF_HUB_ENABLE_HF_TRANSFER=1
 ##########################################################################
 
 
-ACCELERATE_LOG_LEVEL=info TRANSFORMERS_VERBOSITY=info TRAINING_TYPE=RM accelerate launch --config_file accelerate/ds3.yaml main.py configs/llama.yaml
+ACCELERATE_LOG_LEVEL=info TRANSFORMERS_VERBOSITY=info TRAINING_TYPE=SFT accelerate launch --config_file accelerate/ds3.yaml main.py configs/llama.yaml
