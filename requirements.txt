@@ -5,6 +5,7 @@ deepspeed
 flash-attn
 hf_transfer
 huggingface-hub
+huggingface_hub[hf_transfer]
 numpy
 nvitop
 pandas
@@ -15,4 +16,6 @@ tqdm
 transformers
 trl
 wandb
-tensorboardx
+tensorboardX
+nvitop
+trl[vllm]

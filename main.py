@@ -25,7 +25,9 @@ from trl import (
     RewardConfig,
     RewardTrainer,
     DPOTrainer,
-    DPOConfig
+    DPOConfig,
+    GRPOTrainer,
+    GRPOConfig,
 )
 # from liger_kernel.transformers import AutoLigerKernelForCausalLM
 from src.config import (
@@ -36,7 +38,8 @@ from src.config import (
 from src.utils import (
     DEFAULT_CHAT_TEMPLATE,
     map_chat_template_by_task,
-    print_sample_items
+    print_sample_items,
+    reward_func,
 )
 
 
@@ -91,7 +94,7 @@ def main(model_args, data_args, training_args, training_type: str, base_trainer:
             torch_dtype=torch_dtype,
             use_cache=False if training_args.gradient_checkpointing else True
         )
-        if training_type.lower() == 'dpo':
+        if training_type.lower() in ['dpo', 'grpo']:
             ref_model = AutoModelForCausalLM.from_pretrained(
                 model_args.model_name_or_path,
                 cache_dir=model_args.cache_dir,
@@ -147,6 +150,7 @@ def main(model_args, data_args, training_args, training_type: str, base_trainer:
             "tokenizer": tokenizer,
             "training_type": training_type,
             "auto_insert_empty_system_msg": data_args.auto_insert_empty_system_msg,
+            "insert_cot_system_msg": data_args.insert_cot_system_msg,
         },        
         num_proc=data_args.preprocessing_num_workers,
         remove_columns=column_names,
@@ -204,6 +208,14 @@ def main(model_args, data_args, training_args, training_type: str, base_trainer:
             train_dataset=preprocessed_dataset,
             tokenizer=tokenizer,
         )
+    elif training_type.lower() in ['grpo']:
+        trainer = base_trainer(
+                model,
+                reward_funcs=reward_func,
+                args=training_args,
+                train_dataset=preprocessed_dataset,
+                tokenizer=tokenizer,
+            )
     else:
         trainer = base_trainer(
             model,
@@ -212,7 +224,6 @@ def main(model_args, data_args, training_args, training_type: str, base_trainer:
             train_dataset=preprocessed_dataset,
             tokenizer=tokenizer,
         )
-
 
     train_result = trainer.train()
     metrics = train_result.metrics
@@ -232,12 +243,12 @@ def main(model_args, data_args, training_args, training_type: str, base_trainer:
     logger.info(f"Model saved to {training_args.output_dir}")
 
     # Save everything else on main process
-    kwargs = {
-        "finetuned_from": model_args.model_name_or_path,
-        "dataset": data_args.dataset_name,
-    }
+    # kwargs = {
+    #     "finetuned_from": model_args.model_name_or_path,
+    #     "dataset": data_args.dataset_name,
+    # }
     if trainer.accelerator.is_main_process:
-        trainer.create_model_card(**kwargs)
+        trainer.create_model_card()
         # Restore k,v cache for fast inference
         trainer.model.config.use_cache = True
         trainer.model.config.save_pretrained(training_args.output_dir)
@@ -245,7 +256,7 @@ def main(model_args, data_args, training_args, training_type: str, base_trainer:
     # Push to hub
     if training_args.push_to_hub is True:
         logger.info("Pushing to hub...")
-        trainer.push_to_hub(**kwargs)
+        trainer.push_to_hub()
 
     logger.info("*** Training complete! ***")
 
@@ -265,6 +276,9 @@ if __name__ == "__main__":
     elif training_type == 'DPO':
         config_type = DPOConfig
         base_trainer = DPOTrainer
+    elif training_type == 'GPRO':
+        config_type = GRPOConfig
+        base_trainer = GRPOTrainer
     elif training_type == 'RM':
         config_type = RewardConfig
         base_trainer = RewardTrainer

@@ -1,43 +1,42 @@
 # Model arguments
-model_name_or_path: Qwen/Qwen2.5-3B
+model_name_or_path: Qwen/Qwen2.5-Math-1.5B-Instruct
 model_revision: main
 torch_dtype: bfloat16
 
 # Data training arguments
-dataset_name: iqwiki-kor/Q72B-Dist-KoSingle-20K
+dataset_name: nlee-208/LIMO
 dataset_split: train
-preprocessing_num_workers: 48
+preprocessing_num_workers: 16
 auto_insert_empty_system_msg: false
+insert_cot_system_msg: true
 
 # SFT trainer config
 bf16: true
 do_eval: false
-tf32: true
-torch_compile: true
 optim: paged_adamw_8bit
-gradient_accumulation_steps: 4
+gradient_accumulation_steps: 32
 gradient_checkpointing: true
 gradient_checkpointing_kwargs:
   use_reentrant: False
-hub_model_id: iqwiki-kor/Q3B-Q72B_Dist-KoSingle-20K
-learning_rate: 5.0e-07
+hub_model_id: nlee-208/Q25-M-1.5B-IT-LIMO-5ep
+learning_rate: 5.0e-6
 log_level: info
-logging_steps: 5  
+logging_steps: 2  
 logging_strategy: steps
 lr_scheduler_type: cosine
-max_seq_length: 1024
+max_seq_length: 16384
 max_steps: -1
-num_train_epochs: 1
-output_dir: /workspace/hf_cache/iqwiki-kor/Q3B-Q72B_Dist-KoSingle-20K
+num_train_epochs: 5
+output_dir: /mnt/tmp/hf_cache/Q25-M-1.5B-IT-LIMO-5ep
 overwrite_output_dir: true
-per_device_train_batch_size: 32
+per_device_train_batch_size: 1
 remove_unused_columns: true
 report_to:
 - tensorboard
 - wandb
 save_strategy: "epoch"
 seed: 4
-warmup_ratio: 0.05
+warmup_ratio: 0.0
 
 # Hub
 push_to_hub: true

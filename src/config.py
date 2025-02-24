@@ -239,6 +239,10 @@ class DataArguments:
             )
         },
     )
+    insert_cot_system_msg: bool = field(
+        default=True,
+    )
+    
     # Logging
     wandb_entity: Optional[str] = field(
         default=None,

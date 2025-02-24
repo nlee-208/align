@@ -35,6 +35,10 @@ def maybe_insert_system_message(messages, tokenizer):
     if "system" in chat_template or "<|im_start|>" in chat_template:
         messages.insert(0, {"role": "system", "content": ""})
 
+# def insert_cot_system_message(messages, tokenizer):
+#     messages.insert(0, {"role": "system", "content": "Please reason step by step, and put your final answer within \\boxed{}."})
+
+
 def is_openai_format(messages: Any) -> bool:
     """
     Check if the input messages are in OpenAI format.
@@ -53,6 +57,7 @@ def map_chat_template_by_task(
     tokenizer,
     training_type: Literal["SFT", "RM", "ORPO"],
     auto_insert_empty_system_msg: bool = False,
+    insert_cot_system_msg: bool = False,
 ):
     ### TODO: Handle chat templates with inherent errors
     if training_type.lower() == "sft":
@@ -60,6 +65,9 @@ def map_chat_template_by_task(
         # We add an empty system message if there is none
         if auto_insert_empty_system_msg:
             maybe_insert_system_message(messages, tokenizer)
+
+        messages.insert(0, {"role": "system", "content": "Please reason step by step, and put your final answer within \\boxed{}."})
+
         example["text"] = tokenizer.apply_chat_template(
             messages,
             tokenize=False,
@@ -147,3 +155,7 @@ def print_sample_items(
         pass
     else:
         raise Exception("Check the training type.")
+
+# rule-based reward function for GRPO
+def reward_func(completions, **kwargs):
+    return [-abs(20 - len(completion)) for completion in completions] 
